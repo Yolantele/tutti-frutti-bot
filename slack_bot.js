@@ -1,69 +1,3 @@
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           ______     ______     ______   __  __     __     ______
-          /\  == \   /\  __ \   /\__  _\ /\ \/ /    /\ \   /\__  _\
-          \ \  __<   \ \ \/\ \  \/_/\ \/ \ \  _"-.  \ \ \  \/_/\ \/
-           \ \_____\  \ \_____\    \ \_\  \ \_\ \_\  \ \_\    \ \_\
-            \/_____/   \/_____/     \/_/   \/_/\/_/   \/_/     \/_/
-
-
-This is a sample Slack bot built with Botkit.
-
-This bot demonstrates many of the core features of Botkit:
-
-* Connect to Slack using the real time API
-* Receive messages based on "spoken" patterns
-* Reply to messages
-* Use the conversation system to ask questions
-* Use the built in storage system to store and retrieve information
-  for a user.
-
-# RUN THE BOT:
-
-  Get a Bot token from Slack:
-
-    -> http://my.slack.com/services/new/bot
-
-  Run your bot from the command line:
-
-    token=<MY TOKEN> node slack_bot.js
-
-# USE THE BOT:
-
-  Find your bot inside Slack to send it a direct message.
-
-  Say: "Hello"
-
-  The bot will reply "Hello!"
-
-  Say: "who are you?"
-
-  The bot will tell you its name, where it is running, and for how long.
-
-  Say: "Call me <nickname>"
-
-  Tell the bot your nickname. Now you are friends.
-
-  Say: "who am I?"
-
-  The bot will tell you your nickname, if it knows one for you.
-
-  Say: "shutdown"
-
-  The bot will ask if you are sure, and then shut itself down.
-
-  Make sure to invite your bot into other channels using /invite @<my bot>!
-
-# EXTEND THE BOT:
-
-  Botkit has many features for building cool and useful bots!
-
-  Read all about it here:
-
-    -> http://howdy.ai/botkit
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-
 if (!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
@@ -79,6 +13,59 @@ var controller = Botkit.slackbot({
 var bot = controller.spawn({
     token: process.env.token
 }).startRTM();
+
+const order = ['fruit order', 'order fruit', '(.*) fruit order', '(.*) order fruit', 'order fruit(.*)', 'fruit order(.*)']
+
+controller.hears(order, 'direct_message,direct_mention,mention', function(bot, message) {
+
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: 'green_apple',
+    }, function(err, res) {
+        if (err) {
+            bot.botkit.log('Failed to add emoji reaction :(', err);
+        }
+    });
+
+
+    controller.storage.users.get(message.user, function(err, user) {
+        if (user && user.name) {
+            bot.reply(message, 'Ok ' + user.name + ' start your order!!');
+        } else {
+            bot.reply(message, 'Hello let us start your fruit order.');
+        }
+    });
+});
+
+const fruit = ['(.*) apples (.*)']
+
+controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, message) {
+
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: 'apple',
+    }, function(err, res) {
+        if (err) {
+            bot.botkit.log('Failed to add emoji reaction :(', err);
+        }
+    });
+
+    var choice = message.match[0];
+    controller.storage.users.get(message.user, function(err, user) {
+        if (!user) {
+            user = {
+                id: message.user,
+            };
+        }
+        user.choice = choice;
+        controller.storage.users.save(user, function(err, id) {
+            bot.reply(message, 'Got it. I will order you ' + user.choice);
+        });
+    });
+
+});
 
 controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', function(bot, message) {
 
