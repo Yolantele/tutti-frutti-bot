@@ -16,7 +16,7 @@ var bot = controller.spawn({
 
 var totalOrder = [];
 
-controller.hears('I want to order fruit', 'fruit order', function(bot, message) {
+controller.hears('I want to order fruitsdd . ', 'fruit order', function(bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
