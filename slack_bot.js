@@ -1,4 +1,5 @@
-const fetch = require('node-fetch')
+const fetch = require('node-fetch');
+const nodemailer = require('nodemailer');
 
 if (!process.env.token) {
     console.log('Error: Specify token in environment');
@@ -94,6 +95,29 @@ controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_men
     });
 });
 
+controller.hears(['confirm order'], 'direct_message,direct_mention,mention', (bot, message) => {
+    var smtpTransport = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+            user: "tommoir@jigsaw.xyz",
+            pass: "HandKmp5"
+        }
+    })
+    var mailOptions = {
+        from: "TomBot <tommoir@jigsaw.xyz>", // sender address
+        to: "jolanta@jigsaw.xyz", // list of receivers
+        subject: "Hello", // Subject line
+        text: "Hello world", // plaintext body
+        html: "<b>Hello world ✔</b>" // html body
+    }
+    smtpTransport.sendMail(mailOptions, (err, res) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(`Message sent: ${res.message}`)
+        }
+    })
+})
 
 
 controller.hears(['order done'], 'direct_message,direct_mention,mention', function(bot, message) {
