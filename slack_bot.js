@@ -22,7 +22,7 @@ var fruitList = {}
 fetch('https://jigsaw-tutti.herokuapp.com/fruits')
     .then(res => res.text())
     .then(body => {
-        fruitList = body
+        fruitList = JSON.parse(body)
     });
 
 controller.hears(['I want to order fruits', 'fruit order'],'direct_message,direct_mention,mention', function(bot, message) {
@@ -44,7 +44,11 @@ controller.hears(['I want to order fruits', 'fruit order'],'direct_message,direc
         } else {
             bot.reply(message, 'Let us start your fruit order.');
         }
-        bot.reply(message, 'Fruits of today are apples and pears, please enter fruit name and quantity')
+        setTimeout(function(){
+            for (let i = 0; i < fruitList.length; i++) {
+                bot.reply(message, `${fruitList[i].name}, £${fruitList[i].price} `)
+            }
+        },500); 
     });
 });
 
