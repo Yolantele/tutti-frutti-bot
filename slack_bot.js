@@ -118,7 +118,7 @@ controller.hears(['confirm order'], 'direct_message,direct_mention,mention', (bo
                 })
                 var mailOptions = {
                     from: "FruitBot <tommoir@jigsaw.xyz>", // sender address
-                    to: "jolanta@jigsaw.xyz", // list of receivers
+                    to: "jolant@jigsaw.xyz", // list of receivers
                     subject: "Hello", // Subject line
                     text: totalOrder.join("\n"), // plaintext body
                     html: `<ul>${currentOrder}</ul>` // html body
