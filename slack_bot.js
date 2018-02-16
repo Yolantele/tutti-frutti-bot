@@ -66,7 +66,7 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
         }
     });
 
-    var choice = message.text;
+    var choice = message.text.split("/");
     controller.storage.users.get(message.user, function(err, user) {
         if (!user) {
             user = {
