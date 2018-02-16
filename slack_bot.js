@@ -1,3 +1,5 @@
+const fetch = require('node-fetch')
+
 if (!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
@@ -15,8 +17,15 @@ var bot = controller.spawn({
 }).startRTM();
 
 var totalOrder = [];
+var fruitList = {}
 
-controller.hears('I want to order fruitsdd . ', 'fruit order', function(bot, message) {
+fetch('https://jigsaw-tutti.herokuapp.com/fruits')
+    .then(res => res.text())
+    .then(body => {
+        fruitList = body
+    });
+
+controller.hears(['I want to order fruits', 'fruit order'],'direct_message,direct_mention,mention', function(bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -112,6 +121,5 @@ controller.hears(['order done'], 'direct_message,direct_mention,mention', functi
             
         }
     ]);
-    // totalOrder = [];
 });
 });
