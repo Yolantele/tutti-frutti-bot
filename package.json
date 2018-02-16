@@ -23,6 +23,7 @@
     "node-ews": "^3.2.2",
     "node-fetch": "^2.0.0",
     "node-xmpp-caps": "0.0.2",
+    "nodemailer": "^4.4.2",
     "promise": "^8.0.0",
     "request": "^2.81.0",
     "requestretry": "^1.12.0",

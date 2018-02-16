@@ -1,4 +1,5 @@
-const fetch = require('node-fetch')
+const fetch = require('node-fetch');
+const nodemailer = require('nodemailer');
 
 if (!process.env.token) {
     console.log('Error: Specify token in environment');
@@ -94,6 +95,43 @@ controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_men
     });
 });
 
+controller.hears(['confirm order'], 'direct_message,direct_mention,mention', (bot, message) => {
+
+    bot.startConversation(message, (err, convo) => {
+        var currentOrder = totalOrder.map((item) => `<li>${item}</li>`)
+        console.log(currentOrder)
+        convo.ask("Are you sure you'd like to order the following?\n\n" + totalOrder.join("\n"), [{
+            pattern: 'yes',
+            callback: (res, convo) => {
+                convo.say("Let's send that order!")
+                convo.next();
+                var smtpTransport = nodemailer.createTransport({
+                    service: "Gmail",
+                    auth: {
+                        user: "tommoir@jigsaw.xyz",
+                        pass: "jigsawTom"
+                    }
+                })
+                var mailOptions = {
+                    from: "FruitBot <tommoir@jigsaw.xyz>", // sender address
+                    to: "jolanta@jigsaw.xyz", // list of receivers
+                    subject: "Hello", // Subject line
+                    text: totalOrder.join("\n"), // plaintext body
+                    html: `<ul>${currentOrder}</ul>` // html body
+                }
+                smtpTransport.sendMail(mailOptions, (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log(`Message sent: ${res.message}`)
+                    }
+                })
+            }
+        }])
+
+    })
+
+})
 
 
 controller.hears(['order done'], 'direct_message,direct_mention,mention', function(bot, message) {
