@@ -16,7 +16,7 @@ var bot = controller.spawn({
 
 var totalOrder = [];
 
-controller.hears('I want to order fruits', 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears('I want to order fruit', 'fruit order', function(bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -33,7 +33,7 @@ controller.hears('I want to order fruits', 'direct_message,direct_mention,mentio
         if (user && user.name) {
             bot.reply(message, 'Ok ' + user.name + ' let us start your order!!');
         } else {
-            bot.reply(message, 'Hello let us start your fruit order.');
+            bot.reply(message, 'Let us start your fruit order.');
         }
         bot.reply(message, 'Fruits of today are apples and pears, please enter fruit name and quantity')
     });
