@@ -7,7 +7,6 @@ if (!process.env.token) {
 }
 
 var Botkit = require('./lib/Botkit.js');
-var os = require('os');
 
 var controller = Botkit.slackbot({
     debug: true,
@@ -118,8 +117,8 @@ controller.hears(['confirm order'], 'direct_message,direct_mention,mention', (bo
                 })
                 var mailOptions = {
                     from: "FruitBot <tommoir@jigsaw.xyz>", // sender address
-                    to: "jolant@jigsaw.xyz", // list of receivers
-                    subject: "Hello", // Subject line
+                    to: "antonio@jigsaw.xyz", // list of receivers
+                    subject: "Fruit Order", // Subject line
                     text: totalOrder.join("\n"), // plaintext body
                     html: `<ul>${currentOrder}</ul>` // html body
                 }
