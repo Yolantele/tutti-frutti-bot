@@ -118,7 +118,7 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                         }
                     })
                     var mailOptions = {
-                        from: "FruitBot <tommoir@jigsaw.xyz>", // sender address
+                        from: "FruitBot", // sender name
                         to: "antonio@jigsaw.xyz", // list of receivers
                         subject: "Fruit Order", // Subject line
                         text: totalOrder.join("\n"), // plaintext body
@@ -128,7 +128,8 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log(`Message sent: ${res.message}`)
+                            console.log(`Message sent: ${res.message}`);
+                            totalOrder = [];
                         }
                     })
             }
