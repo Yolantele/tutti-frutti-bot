@@ -112,8 +112,8 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                     var smtpTransport = nodemailer.createTransport({
                         service: "Gmail",
                         auth: {
-                            user: "tommoir@jigsaw.xyz",
-                            pass: "jigsawTom"
+                            user: "your@email.address",
+                            pass: "yourPassword"
                         }
                     })
                     var mailOptions = {
