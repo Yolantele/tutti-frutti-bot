@@ -18,6 +18,7 @@ var bot = controller.spawn({
 
 var totalOrder = [];
 var fruitList = {}
+var fruit = []
 
 fetch('https://jigsaw-tutti.herokuapp.com/fruits')
     .then(res => res.text())
@@ -25,7 +26,7 @@ fetch('https://jigsaw-tutti.herokuapp.com/fruits')
         fruitList = JSON.parse(body)
     });
 
-controller.hears(['I want to order fruits', 'fruit order'],'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', function(bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -46,13 +47,12 @@ controller.hears(['I want to order fruits', 'fruit order'],'direct_message,direc
         }
         setTimeout(function(){
             for (let i = 0; i < fruitList.length; i++) {
+                fruit.push(fruitList[i].name)
                 bot.reply(message, `${fruitList[i].name}, £${fruitList[i].price} `)
             }
         },500); 
     });
 });
-
-const fruit = ['apple','apples', 'pear', 'pears'];
 
 controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, message) {
 
