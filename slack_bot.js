@@ -1,7 +1,8 @@
+require('dotenv').config();
 const fetch = require('node-fetch');
 const nodemailer = require('nodemailer');
 
-if (!process.env.token) {
+if (!process.env.SLACK_TOKEN) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
@@ -13,7 +14,7 @@ var controller = Botkit.slackbot({
 });
 
 var bot = controller.spawn({
-    token: process.env.token
+    token: process.env.SLACK_TOKEN
 }).startRTM();
 
 var totalOrder = [];
@@ -112,8 +113,8 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                     var smtpTransport = nodemailer.createTransport({
                         service: "Gmail",
                         auth: {
-                            user: "your@email.address",
-                            pass: "yourPassword"
+                            user: process.env.EMAIL_ADDRESS,
+                            pass: process.env.PASSWORD
                         }
                     })
                     var mailOptions = {
