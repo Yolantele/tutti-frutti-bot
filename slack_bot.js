@@ -98,69 +98,50 @@ controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_men
     });
 });
 
-controller.hears(['confirm order'], 'direct_message,direct_mention,mention', (bot, message) => {
+controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => {
 
     bot.startConversation(message, (err, convo) => {
         var currentOrder = totalOrder.map((item) => `<li>${item}</li>`)
         console.log(currentOrder)
-        convo.ask("Are you sure you'd like to order the following?\n\n" + totalOrder.join("\n"), [{
-            pattern: 'yes',
-            callback: (res, convo) => {
-                convo.say("Let's send that order!")
-                convo.next();
-                var smtpTransport = nodemailer.createTransport({
-                    service: "Gmail",
-                    auth: {
-                        user: "tommoir@jigsaw.xyz",
-                        pass: "jigsawTom"
+        convo.ask("Are you sure you'd like to order the following?\n\n" + totalOrder.join("\n"), [
+            {
+                pattern: bot.utterances.yes,
+                callback: (res, convo) => {
+                    convo.say("Let's send that order!")
+                    convo.next();
+                    var smtpTransport = nodemailer.createTransport({
+                        service: "Gmail",
+                        auth: {
+                            user: "tommoir@jigsaw.xyz",
+                            pass: "jigsawTom"
+                        }
+                    })
+                    var mailOptions = {
+                        from: "FruitBot <tommoir@jigsaw.xyz>", // sender address
+                        to: "antonio@jigsaw.xyz", // list of receivers
+                        subject: "Fruit Order", // Subject line
+                        text: totalOrder.join("\n"), // plaintext body
+                        html: `<ul>${currentOrder}</ul>` // html body
                     }
-                })
-                var mailOptions = {
-                    from: "FruitBot <tommoir@jigsaw.xyz>", // sender address
-                    to: "antonio@jigsaw.xyz", // list of receivers
-                    subject: "Fruit Order", // Subject line
-                    text: totalOrder.join("\n"), // plaintext body
-                    html: `<ul>${currentOrder}</ul>` // html body
-                }
-                smtpTransport.sendMail(mailOptions, (err, res) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log(`Message sent: ${res.message}`)
-                    }
-                })
+                    smtpTransport.sendMail(mailOptions, (err, res) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log(`Message sent: ${res.message}`)
+                        }
+                    })
             }
-        }])
+        },
+            {
+                pattern: bot.utterances.no,
+                default: true,
+                callback: function(response, convo) {
+                convo.say('*What else would you like to order?*');
+                convo.next();
+                }
+            }
+        ])
 
     })
 
 })
-
-
-controller.hears(['order done'], 'direct_message,direct_mention,mention', function(bot, message) {
-
-    bot.startConversation(message, function(err, convo) {
-
-        convo.ask('Are you sure order is complete', [
-            {
-                pattern: bot.utterances.yes,
-                callback: function(response, convo) {
-                    convo.say('Order Sent, I will order ' + totalOrder.toString());
-                    convo.next();
-                    setTimeout(function() {
-                        process.exit();
-                    }, 3000);
-                }
-            },
-        {
-            pattern: bot.utterances.no,
-            default: true,
-            callback: function(response, convo) {
-                convo.say('*What else woould you like to order*');
-                convo.next();
-            }
-            
-        }
-    ]);
-});
-});
