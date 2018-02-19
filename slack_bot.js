@@ -128,7 +128,8 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log(`Message sent: ${res.message}`)
+                            console.log(`Message sent: ${res.message}`);
+                            totalOrder = [];
                         }
                     })
             }
