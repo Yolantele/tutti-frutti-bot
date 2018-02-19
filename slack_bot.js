@@ -136,7 +136,7 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                 pattern: bot.utterances.no,
                 default: true,
                 callback: function(response, convo) {
-                convo.say('*What else would you like to order?*');
+                convo.say('What *else* would you like to order?');
                 convo.next();
                 }
             }
