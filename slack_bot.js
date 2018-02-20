@@ -155,5 +155,10 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
         ])
 
     })
-
 })
+
+controller.hears(['(.*)'],'direct_message,direct_mention,mention', function(bot, message) {
+    controller.storage.users.get(message.user, function(err, user) {
+        bot.reply(message, 'Sorry, I don\'t recognize that command. Type help for the command list');
+    });
+});
