@@ -4,6 +4,12 @@
   "description": "Building blocks for Building Bots",
   "main": "lib/Botkit.js",
   "types": "lib/Botkit.d.ts",
+  "scripts": {
+    "pretest": "jscs ./lib/ ./__test__ --fix",
+    "test": "jest --coverage",
+    "test-legacy": "mocha ./tests/*.js",
+    "test-watch": "jest --watch"
+  },
   "dependencies": {
     "async": "^2.1.5",
     "back": "^1.0.1",
@@ -42,12 +48,6 @@
     "should-sinon": "0.0.5",
     "sinon": "^2.1.0",
     "winston": "^2.3.1"
-  },
-  "scripts": {
-    "pretest": "jscs ./lib/ ./__test__ --fix",
-    "test": "jest --coverage",
-    "test-legacy": "mocha ./tests/*.js",
-    "test-watch": "jest --watch"
   },
   "bin": {
     "botkit": "./bin/cli.js"

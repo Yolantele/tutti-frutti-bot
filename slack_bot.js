@@ -49,7 +49,7 @@ controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direc
         setTimeout(function(){
             for (let i = 0; i < fruitList.length; i++) {
                 fruit.push(fruitList[i].name)
-                bot.reply(message, `${fruitList[i].name}, £${fruitList[i].price} `)
+                bot.reply(message, `${fruitList[i].name}, £${Number(fruitList[i].price).toFixed(2)}`)
             }
         },500); 
     });
@@ -61,22 +61,26 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
         timestamp: message.ts,
         channel: message.channel,
         name: 'apple',
-    }, function(err, res) {
+    }, (err, res) => {
         if (err) {
             bot.botkit.log('Failed to add emoji reaction :(', err);
         }
     });
 
-    var choice = message.text.split("/");
-    controller.storage.users.get(message.user, function(err, user) {
+    let choice   = message.text.split(" ");
+    let quantity = Number(choice.splice(0, 1)[0]);
+    let item     = choice.join(' ').trim();
+
+    controller.storage.users.get(message.user, (err, user) => {
         if (!user) {
             user = {
                 id: message.user,
             };
         }
-        user.choice = choice;
+        console.log('USER --->', user)
+        console.log('MESSAGE --->', message)
         totalOrder.push(choice);
-        controller.storage.users.save(user, function(err, id) {
+        controller.storage.users.save(user, (err, id) => {
             bot.reply(message, 'Got it. I will order you ' + message.text);
         });
     });
