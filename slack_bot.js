@@ -77,10 +77,18 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
                 id: message.user,
             };
         }
-        totalOrder.push({
-            name: name,
-            quantity: quantity
-        });
+
+        let existingItem = totalOrder.filter(item => item.name.toLowerCase() === name.toLowerCase())[0]
+
+        if (existingItem) {
+            existingItem.quantity = existingItem.quantity + quantity
+        } else {
+            totalOrder.push({
+                name: name,
+                quantity: quantity
+            });
+        }
+
         controller.storage.users.save(user, (err, id) => {
             bot.reply(message, 'Got it. I will order you ' + message.text);
         });
