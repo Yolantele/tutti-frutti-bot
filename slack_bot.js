@@ -69,7 +69,7 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
 
     let choice   = message.text.split(" ");
     let quantity = Number(choice.splice(0, 1)[0]);
-    let item     = choice.join(' ').trim();
+    let name     = choice.join(' ').trim();
 
     controller.storage.users.get(message.user, (err, user) => {
         if (!user) {
@@ -77,9 +77,10 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
                 id: message.user,
             };
         }
-        console.log('USER --->', user)
-        console.log('MESSAGE --->', message)
-        totalOrder.push(choice);
+        totalOrder.push({
+            name: name,
+            quantity: quantity
+        });
         controller.storage.users.save(user, (err, id) => {
             bot.reply(message, 'Got it. I will order you ' + message.text);
         });
@@ -106,9 +107,9 @@ controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_men
 controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => {
 
     bot.startConversation(message, (err, convo) => {
-        var currentOrder = totalOrder.map((item) => `<li>${item}</li>`)
-        console.log(currentOrder)
-        convo.ask("Are you sure you'd like to order the following?\n\n" + totalOrder.join("\n"), [
+        var orderList   = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join('')
+        var orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity}</li>`).join('')
+        convo.ask("Are you sure you'd like to order the following?\n\n" + orderList, [
             {
                 pattern: bot.utterances.yes,
                 callback: (res, convo) => {
@@ -123,16 +124,16 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                     })
                     var mailOptions = {
                         from: "FruitBot", // sender name
-                        to: "antonio@jigsaw.xyz", // list of receivers
+                        to: process.env.EMAIL_ADDRESS, // list of receivers
                         subject: "Fruit Order", // Subject line
-                        text: totalOrder.join("\n"), // plaintext body
-                        html: `<ul>${currentOrder}</ul>` // html body
+                        text: orderList, // plaintext body
+                        html: `<ul>${orderAsHTML}</ul>` // html body
                     }
                     smtpTransport.sendMail(mailOptions, (err, res) => {
                         if (err) {
-                            console.log(err);
+                            console.log('EMAIL =====>>>>> ', err);
                         } else {
-                            console.log(`Message sent: ${res.message}`);
+                            console.log(`EMAIL =====>>>>> Message sent: ${res.message}`);
                             totalOrder = [];
                         }
                     })
