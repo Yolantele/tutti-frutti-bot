@@ -56,7 +56,7 @@ controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direc
 });
 
 controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, message) {
-
+    console.log("MESSAGE ===>>>", message)
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
@@ -79,7 +79,6 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
         }
 
         let existingItem = totalOrder.filter(item => item.name.toLowerCase() === name.toLowerCase())[0]
-
         if (existingItem) {
             existingItem.quantity = existingItem.quantity + quantity
         } else {
@@ -88,10 +87,8 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
                 quantity: quantity
             });
         }
-
-        controller.storage.users.save(user, (err, id) => {
-            bot.reply(message, 'Got it. I will order you ' + message.text);
-        });
+        let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join("")
+        bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}`)
     });
 
 });
