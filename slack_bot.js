@@ -20,6 +20,7 @@ var bot = controller.spawn({
 var totalOrder = [];
 var fruitList = {}
 var fruit = []
+var priceList = []
 
 fetch('https://jigsaw-tutti.herokuapp.com/fruits')
     .then(res => res.text())
@@ -49,6 +50,7 @@ controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direc
         setTimeout(function(){
             for (let i = 0; i < fruitList.length; i++) {
                 fruit.push(fruitList[i].name)
+                priceList.push([fruitList[i].name, fruitList[i].price])
                 bot.reply(message, `${fruitList[i].name}, £${Number(fruitList[i].price).toFixed(2)}`)
             }
         },500); 
@@ -87,8 +89,17 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
                 quantity: quantity
             });
         }
-        let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join("")
-        bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}`)
+        totalOrder.map(fruit => {
+            for (let i = 0; i < priceList.length; i++) {
+                if(fruit.name.toLowerCase() === priceList[i][0].toLowerCase()){
+                    fruit.price = priceList[i][1]
+                }
+            }
+        })
+        let totalPrice = 0.0
+        totalOrder.map(item => totalPrice += parseFloat(`${item.price * item.quantity}`, 10))
+        let updatedBasket = totalOrder.map(item => `${item.quantity} ${item.name}: £${item.price * item.quantity} \n`).join("")
+        bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}\nYour total is: £${totalPrice}`)
     });
 
 });
