@@ -1,20 +1,20 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const nodemailer = require('nodemailer');
-var totalOrder = [];
-var fruit = []
-var Botkit = require('./lib/Botkit.js');
+let Botkit = require('./lib/Botkit.js');
+let totalOrder = [];
+let fruit = []
 
 if (!process.env.SLACK_TOKEN) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
 
-var controller = Botkit.slackbot({
+let controller = Botkit.slackbot({
     debug: true,
 });
 
-var bot = controller.spawn({
+let bot = controller.spawn({
     token: process.env.SLACK_TOKEN
 }).startRTM();
 
@@ -92,7 +92,7 @@ function updateOrder(bot, message, fruit) {
 }
 
 function getName(bot, message) {
-    var name = message.match[1];
+    let name = message.match[1];
     controller.storage.users.get(message.user, function(err, user) {
         if (!user) {
             user = {
@@ -108,22 +108,22 @@ function getName(bot, message) {
 
 function finishOrder(bot, message) {
     bot.startConversation(message, (err, convo) => {
-        var orderList   = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join('')
-        var orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity}</li>`).join('')
+        let orderList   = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join('')
+        let orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity}</li>`).join('')
         convo.ask("Are you sure you'd like to order the following?\n\n" + orderList, [
             {
                 pattern: bot.utterances.yes,
                 callback: (res, convo) => {
                     convo.say("Let's send that order!")
                     convo.next();
-                    var smtpTransport = nodemailer.createTransport({
+                    let smtpTransport = nodemailer.createTransport({
                         service: "Gmail",
                         auth: {
                             user: process.env.EMAIL_ADDRESS,
                             pass: process.env.PASSWORD
                         }
                     })
-                    var mailOptions = {
+                    let mailOptions = {
                         from: "FruitBot", // sender name
                         to: process.env.EMAIL_ADDRESS, // list of receivers
                         subject: "Fruit Order", // Subject line
