@@ -14,7 +14,7 @@ exports.startBot = async function (controller, bot) {
         fruitListNames = JSON.parse(body).map(eachFruit => eachFruit.name)
     }));
     controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList));
-    controller.hears(fruitListNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder));
+    controller.hears(fruitListNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
     controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(controller, bot, message));
     controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => finishOrder(controller, bot, message, totalOrder));
     controller.hears(['(.*) help', 'help'],'direct_message,direct_mention,mention', (bot, message) => helpUser(controller, bot, message));
@@ -56,7 +56,7 @@ function listFruit(bot, message, fruitList) {
 }
 
 
-function updateOrder(controller, bot, message, totalOrder) {
+function updateOrder(controller, bot, message, totalOrder, fruitList) {
     console.log("MESSAGE ===>>>", message)
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -71,6 +71,7 @@ function updateOrder(controller, bot, message, totalOrder) {
     let choice   = message.text.split(" ");
     let quantity = Number(choice.splice(0, 1)[0]);
     let name     = choice.join(' ').trim();
+    let price    = fruitList.filter(e => e.name.toLowerCase() === name.toLowerCase())[0].price
 
     controller.storage.users.get(message.user, (err, user) => {
         if (!user) {
@@ -84,22 +85,27 @@ function updateOrder(controller, bot, message, totalOrder) {
             existingItem.quantity = existingItem.quantity + quantity
         } else {
             totalOrder.push({
-                name: name,
-                quantity: quantity
+                name: name.toLowerCase(),
+                quantity: quantity,
+                price: price
             });
         }
-        Promise.resolve(totalOrder.filter(e => e.quantity !== 0))
+        Promise.resolve(totalOrder.filter(e => e.quantity > 0))
             .then((updatedOrder)=> {
                 totalOrder = updatedOrder
                 if(totalOrder.length > 0) {
-                    let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join("")
-                    bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}`)
+                    let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
+                    bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
                 }
                 else {
                     bot.reply(message, "Your basket is now empty.")
                 }
             })
     });
+}
+
+function getSum(total, num) {
+    return total + num
 }
 
 function getName(controller, bot, message) {
@@ -119,8 +125,8 @@ function getName(controller, bot, message) {
 
 function finishOrder(controller, bot, message, totalOrder) {
     bot.startConversation(message, (err, convo) => {
-        let orderList   = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join('')
-        let orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity}</li>`).join('')
+        let orderList   = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
+        let orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)}</li>`).join('')
         convo.ask("Are you sure you'd like to order the following?\n\n" + orderList, [
             {
                 pattern: bot.utterances.yes,
