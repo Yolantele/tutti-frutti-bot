@@ -126,7 +126,6 @@ function getName(controller, bot, message) {
 function finishOrder(controller, bot, message, totalOrder) {
     bot.startConversation(message, (err, convo) => {
         let orderList   = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
-        let orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)}</li>`).join('')
 
         convo.ask("Are you sure you'd like to order the following?\n\n" + orderList, [
             {
@@ -146,7 +145,7 @@ function finishOrder(controller, bot, message, totalOrder) {
                         to: process.env.EMAIL_ADDRESS, // list of receivers
                         subject: "Fruit Order", // Subject line
                         text: orderList, // plaintext body
-                        html: `<ul>${orderAsHTML}</ul>` + `</br> Total: £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`// html body
+                        html: orderAsHTMLBuilder(totalOrder) // html body
                     }
                     smtpTransport.sendMail(mailOptions, (err, res) => {
                         if (err) {
@@ -168,6 +167,10 @@ function finishOrder(controller, bot, message, totalOrder) {
             }
         ])
     })
+}
+
+function orderAsHTMLBuilder(totalOrder) {
+   return 'Here is this week\'s order: </br>' + '<ul>' + totalOrder.map(item => `<li>${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)}</li>`).join('') + '</ul>' + `</br> Total: £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`
 }
 
 function helpUser(controller, bot, message) {
