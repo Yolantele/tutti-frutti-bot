@@ -87,8 +87,12 @@ function updateOrder(controller, bot, message, totalOrder) {
                 quantity: quantity
             });
         }
-        let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join("")
-        bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}`)
+        Promise.resolve(totalOrder.filter(e => e.quantity !== 0))
+            .then((updatedOrder)=> {
+                totalOrder = updatedOrder
+                let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join("")
+                bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}`)
+            })
     });
 }
 
