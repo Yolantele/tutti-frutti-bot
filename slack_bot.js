@@ -32,11 +32,7 @@ function startOrder(bot, message, fruitList) {
 
     controller.storage.users.get(message.user, function(err, user) {
         startOrderText(bot, message, user)
-            .then(
-                function() {
-                    listFruit(bot, message, fruitList)
-                }
-            )
+            .then(() => { listFruit(bot, message, fruitList)})
     });
 }    
 
