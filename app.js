@@ -4,22 +4,24 @@ const nodemailer = require('nodemailer');
 exports.startBot = async function (controller, bot) {
     
     let fruitList
+    let fruitListNames
     let totalOrder = [];
-    let fruit = [];
+    // let fruit = [];
     await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
         .then(res => res.text())
         .then(body => {
         fruitList = JSON.parse(body)
+        fruitListNames = JSON.parse(body).map(eachFruit => eachFruit.name)
     }));
-    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, fruit));
-    controller.hears(fruit, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder));
+    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList));
+    controller.hears(fruitListNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder));
     controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(controller, bot, message));
     controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => finishOrder(controller, bot, message, totalOrder));
     controller.hears(['(.*) help', 'help'],'direct_message,direct_mention,mention', (bot, message) => helpUser(controller, bot, message));
     controller.hears(['(.*)'],'direct_message,direct_mention,mention', (bot, message) => errorHandling(controller, bot, message));
 }
 
-function startOrder(controller, bot, message, fruitList, fruit) {
+function startOrder(controller, bot, message, fruitList) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -33,7 +35,7 @@ function startOrder(controller, bot, message, fruitList, fruit) {
 
     controller.storage.users.get(message.user, function(err, user) {
         startOrderText(bot, message, user)
-            .then(() => { listFruit(bot, message, fruitList, fruit)})
+            .then(() => { listFruit(bot, message, fruitList)})
     });
 }    
 
@@ -47,10 +49,9 @@ function startOrderText(bot, message, user) {
     })
 }
 
-function listFruit(bot, message, fruitList, fruit) {
+function listFruit(bot, message, fruitList) {
     fruitList.forEach(function(eachFruit) {
-        fruit.push(eachFruit.name)
-        bot.reply(message, `${eachFruit.name}, £${Number(eachFruit.price).toFixed(2)}`)
+        bot.reply(message, `${eachFruit.name}, £${Number(eachFruit.price)}`)
     })
 }
 
