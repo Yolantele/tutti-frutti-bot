@@ -1,13 +1,14 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const nodemailer = require('nodemailer');
+var totalOrder = [];
+var fruit = []
+var Botkit = require('./lib/Botkit.js');
 
 if (!process.env.SLACK_TOKEN) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
-
-var Botkit = require('./lib/Botkit.js');
 
 var controller = Botkit.slackbot({
     debug: true,
@@ -17,17 +18,7 @@ var bot = controller.spawn({
     token: process.env.SLACK_TOKEN
 }).startRTM();
 
-var totalOrder = [];
-var fruitList = {}
-var fruit = []
-
-fetch('https://jigsaw-tutti.herokuapp.com/fruits')
-    .then(res => res.text())
-    .then(body => {
-        fruitList = JSON.parse(body)
-    });
-
-controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', function(bot, message) {
+function startOrder(bot, message, fruitList) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -39,23 +30,35 @@ controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direc
         }
     });
 
-
     controller.storage.users.get(message.user, function(err, user) {
-        if (user && user.name) {
-            bot.reply(message, 'Ok ' + user.name + ' let us start your order!!');
-        } else {
-            bot.reply(message, 'Let us start your fruit order.');
-        }
-        setTimeout(function(){
-            for (let i = 0; i < fruitList.length; i++) {
-                fruit.push(fruitList[i].name)
-                bot.reply(message, `${fruitList[i].name}, £${Number(fruitList[i].price).toFixed(2)}`)
-            }
-        },500); 
+        startOrderText(bot, message, user)
+            .then(
+                function() {
+                    listFruit(bot, message, fruitList)
+                }
+            )
     });
-});
+}    
 
-controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, message) {
+function startOrderText(bot, message, user) {
+    return new Promise(function(resolve) {
+        if (user && user.name) {
+            bot.reply(message, 'Ok ' + user.name + ' let us start your order!!', resolve);
+        } else {
+            bot.reply(message, 'Let us start your fruit order.', resolve);
+        } 
+    })
+}
+
+function listFruit(bot, message, fruitList) {
+    fruitList.forEach(function(eachFruit) {
+        fruit.push(eachFruit.name)
+        bot.reply(message, `${eachFruit.name}, £${Number(eachFruit.price).toFixed(2)}`)
+    })
+}
+
+
+function updateOrder(bot, message, fruit) {
     console.log("MESSAGE ===>>>", message)
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -90,11 +93,9 @@ controller.hears(fruit, 'direct_message,direct_mention,mention', function(bot, m
         let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join("")
         bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}`)
     });
+}
 
-});
-
-
-controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+function getName(bot, message) {
     var name = message.match[1];
     controller.storage.users.get(message.user, function(err, user) {
         if (!user) {
@@ -107,10 +108,9 @@ controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_men
             bot.reply(message, 'Got it. I will call you ' + user.name + ' from now on.');
         });
     });
-});
+}
 
-controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => {
-
+function finishOrder(bot, message) {
     bot.startConversation(message, (err, convo) => {
         var orderList   = totalOrder.map(item => `${item.name}: ${item.quantity}\n`).join('')
         var orderAsHTML = totalOrder.map(item => `<li>${item.name}: ${item.quantity}</li>`).join('')
@@ -153,18 +153,35 @@ controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_mess
                 }
             }
         ])
-
     })
-})
+}
 
-controller.hears(['(.*) help', 'help'],'direct_message,direct_mention,mention', function(bot, message) {
+function helpUser(bot, message) {
     controller.storage.users.get(message.user, function(err, user) {
         bot.reply(message, 'I am Tutti! The best fruit ordering bot in the world. This is how I can help you:')
     });
-})
+}
 
-controller.hears(['(.*)'],'direct_message,direct_mention,mention', function(bot, message) {
+function errorHandling(bot, message) {
     controller.storage.users.get(message.user, function(err, user) {
         bot.reply(message, 'Sorry, I don\'t recognize that command. Type help for the command list');
     });
-})
+}
+
+async function main() {
+    let fruitList
+    await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
+        .then(res => res.text())
+        .then(body => {
+        fruitList = JSON.parse(body)
+    }));
+    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(bot, message, fruitList));
+    controller.hears(fruit, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(bot, message));
+    controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(bot, message));
+    controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => finishOrder(bot, message));
+    controller.hears(['(.*) help', 'help'],'direct_message,direct_mention,mention', (bot, message) => helpUser(bot, message));
+    controller.hears(['(.*)'],'direct_message,direct_mention,mention', (bot, message) => errorHandling(bot, message));
+}
+
+
+main();
