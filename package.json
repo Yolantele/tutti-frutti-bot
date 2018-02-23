@@ -2,9 +2,10 @@
   "name": "botkit",
   "version": "0.6.10",
   "description": "Building blocks for Building Bots",
-  "main": "lib/Botkit.js",
+  "main": "index.js",
   "types": "lib/Botkit.d.ts",
   "scripts": {
+    "start": "node index.js",
     "pretest": "jscs ./lib/ ./__test__ --fix",
     "test": "jest --coverage",
     "test-legacy": "mocha ./tests/*.js",
