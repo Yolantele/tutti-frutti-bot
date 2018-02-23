@@ -19,7 +19,6 @@ exports.startBot = async function (controller, bot) {
         categories.forEach(category => categoryNames.push(category.name));
         fruitList.forEach(fruit => fruitNames.push(fruit.name));
         categoryCommands = categoryNames.map(category => `show me ${category}`)
-        console.log('COMMANDS ===>>>', categoryCommands)
     }));
     controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, categories));
     controller.hears(categoryCommands, 'direct_message,direct_mention,mention', (bot, message) => filterCategory(controller, bot, message, categories, fruitList))
@@ -99,12 +98,18 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
 
         let existingItem = totalOrder.filter(item => item.name.toLowerCase() === name.toLowerCase())[0]
         if (existingItem) {
-            existingItem.quantity = existingItem.quantity + quantity
+            let newQuantity = existingItem.quantity + quantity;
+            if (newQuantity > 0) {
+                existingItem.quantity = existingItem.quantity + quantity;
+            } else {
+                let itemIndex = totalOrder.indexOf(existingItem);
+                totalOrder.splice(itemIndex, 1)
+            }
         } else {
             totalOrder.push({
-                name: name.toLowerCase(),
+                name    : name.toLowerCase(),
                 quantity: quantity,
-                price: price
+                price   : price
             });
         }
         Promise.resolve(totalOrder.filter(e => e.quantity > 0))
