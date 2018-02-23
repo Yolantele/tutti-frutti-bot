@@ -3,15 +3,18 @@ const nodemailer = require('nodemailer');
 
 exports.startBot = async function (controller, bot) {
     
-    let fruitList
-    let fruitListNames
-    let totalOrder = [];
+    let fruitList;
+    let fruitListNames = [];
+    let totalOrder     = [];
     // let fruit = [];
-    await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
+    // await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
+    await (fetch('http://localhost:3000/fruits')
         .then(res => res.text())
         .then(body => {
-        fruitList = JSON.parse(body)
-        fruitListNames = JSON.parse(body).map(eachFruit => eachFruit.name)
+        fruitList = JSON.parse(body);
+        for (var key in fruitList) {
+            fruitList[key].fruits.forEach(fruit => fruitListNames.push(fruit.name));
+        };
     }));
     controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList));
     controller.hears(fruitListNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
@@ -22,7 +25,6 @@ exports.startBot = async function (controller, bot) {
 }
 
 function startOrder(controller, bot, message, fruitList) {
-
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
@@ -50,14 +52,15 @@ function startOrderText(bot, message, user) {
 }
 
 function listFruit(bot, message, fruitList) {
-    fruitList.forEach(function(eachFruit) {
-        bot.reply(message, `${eachFruit.name}, £${Number(eachFruit.price)}`)
-    })
+    for (var key in fruitList) {
+        let category = fruitList[key];
+        bot.reply(message, `\n*${category.name}*:\n`);
+        category.fruits.forEach(fruit => bot.reply(message, `${fruit.name}: £${fruit.price.toFixed(2)}`))
+    }
 }
 
 
 function updateOrder(controller, bot, message, totalOrder, fruitList) {
-    console.log("MESSAGE ===>>>", message)
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
