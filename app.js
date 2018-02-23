@@ -52,11 +52,14 @@ function startOrderText(bot, message, user) {
 }
 
 function listFruit(bot, message, fruitList) {
+    let fruitMenu = '';
     for (var key in fruitList) {
         let category = fruitList[key];
-        bot.reply(message, `\n*${category.name}*:\n`);
-        category.fruits.forEach(fruit => bot.reply(message, `${fruit.name}: £${fruit.price.toFixed(2)}`))
+        fruitMenu += `*${category.name}*:\n`
+        category.fruits.forEach(fruit => fruitMenu += `${fruit.name}: £${fruit.price.toFixed(2)}\n`)
+        fruitMenu += "\n"
     }
+    bot.reply(message, fruitMenu);
 }
 
 
