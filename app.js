@@ -8,9 +8,8 @@ exports.startBot = async function (controller, bot) {
     let totalOrder    = [];
     let categories;
     let categoryNames = [];
-    // let fruit = [];
-    // await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
-    await (fetch('http://localhost:3000/fruits')
+    await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
+    // await (fetch('http://localhost:3000/fruits')
         .then(res => res.text())
         .then(body => {
         let info = JSON.parse(body);
