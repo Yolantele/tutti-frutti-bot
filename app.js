@@ -21,6 +21,7 @@ exports.startBot = async function (controller, bot) {
         categoryCommands = categoryNames.map(category => `show me ${category}`)
     }));
     controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, categories));
+    controller.hears(['show basket'], 'direct_message,direct_mention,mention', (bot, message) => showBasket(controller, bot, message, totalOrder));
     controller.hears(categoryCommands, 'direct_message,direct_mention,mention', (bot, message) => filterCategory(controller, bot, message, categories, fruitList))
     controller.hears(fruitNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
     controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(controller, bot, message));
@@ -73,6 +74,12 @@ function filterCategory(controller, bot, message, categories, fruitList) {
     bot.reply(message, botResponse);
 }
 
+function showBasket(controller, bot, message, totalOrder) {
+    console.log(totalOrder);
+    let basketToString = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('') 
+    bot.reply(message, `Your basket:\n${basketToString}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
+}
+
 function updateOrder(controller, bot, message, totalOrder, fruitList) {
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -100,10 +107,10 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
         if (existingItem) {
             let newQuantity = existingItem.quantity + quantity;
             if (newQuantity > 0) {
-                existingItem.quantity = existingItem.quantity + quantity;
+                existingItem.quantity = newQuantity;
             } else {
-                let itemIndex = totalOrder.indexOf(existingItem);
-                totalOrder.splice(itemIndex, 1)
+                let i = totalOrder.indexOf(existingItem);
+                totalOrder.splice(i, 1);
             }
         } else {
             totalOrder.push({
@@ -112,17 +119,14 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
                 price   : price
             });
         }
-        Promise.resolve(totalOrder.filter(e => e.quantity > 0))
-            .then((updatedOrder)=> {
-                totalOrder = updatedOrder
-                if(totalOrder.length > 0) {
-                    let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
-                    bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
-                }
-                else {
-                    bot.reply(message, "Your basket is now empty.")
-                }
-            })
+
+        if (totalOrder.length > 0) {
+            let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
+            bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
+        } else {
+            bot.reply(message, "Your basket is now empty.")
+        }
+
     });
 }
 
