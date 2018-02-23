@@ -111,29 +111,35 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
         let existingItem = totalOrder.filter(item => item.name.toLowerCase() === name.toLowerCase())[0]
         if (existingItem) {
             let newQuantity = existingItem.quantity + quantity;
-            if (newQuantity > 0) {
-                existingItem.quantity = newQuantity;
-            } else {
+            existingItem.quantity = newQuantity;
+            if (existingItem.quantity <= 0) {
                 let i = totalOrder.indexOf(existingItem);
                 totalOrder.splice(i, 1);
             }
         } else {
-            totalOrder.push({
-                name    : name.toLowerCase(),
-                quantity: quantity,
-                price   : price
-            });
+            if(quantity > 0) {
+                totalOrder.push({
+                    name    : name.toLowerCase(),
+                    quantity: quantity,
+                    price   : price
+                });
+            }
         }
 
         if (totalOrder.length > 0) {
             let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
-            bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
+                if(quantity>=0) {
+                    bot.reply(message, `Got it! I will add ${quantity} ${name} to your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
+                } else {
+                    bot.reply(message, `Got it! I will remove ${quantity} ${name} from your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
+                }
         } else {
             bot.reply(message, "Your basket is now empty.")
         }
 
     });
 }
+
 
 function getSum(total, num) {
     return total + num
@@ -155,9 +161,9 @@ function getName(controller, bot, message) {
 }
 
 function finishOrder(controller, bot, message, totalOrder) {
-    bot.startConversation(message, (err, convo) => {
+    if(totalOrder.length > 0) {
+        bot.startConversation(message, (err, convo) => {
         let orderList   = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
-
         convo.ask("Are you sure you'd like to order the following?\n\n" + orderList, [
             {
                 pattern: bot.utterances.yes,
@@ -196,8 +202,10 @@ function finishOrder(controller, bot, message, totalOrder) {
                 convo.next();
                 }
             }
-        ])
-    })
+        ])})
+    } else {
+        bot.reply(message, 'Your basket is empty. Please type help to find out how to add items to your basket.')
+    }
 }
 
 function orderAsHTMLBuilder(totalOrder) {
