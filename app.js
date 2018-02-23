@@ -118,12 +118,16 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
                 totalOrder.splice(i, 1);
             }
         } else {
-            totalOrder.push({
-                name    : name.toLowerCase(),
-                quantity: quantity,
-                price   : price
-            });
+            if(quantity > 0) {
+                totalOrder.push({
+                    name    : name.toLowerCase(),
+                    quantity: quantity,
+                    price   : price
+                });
+            }
         }
+
+
 
         if (totalOrder.length > 0) {
             let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
