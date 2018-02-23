@@ -14,27 +14,21 @@ You can still use the bot in other channels, however you would have to start by 
 
 * To start a new order, use one of the following:
 
-`
+```
   start order
-
   fruit order
-
   I want to order fruits
-`
+```
 
 This will list all of the available options and their prices, and allow you to start adding fruits to your basket.
 
 * To add an item to your basket:
 
-`
-  <quantity> <itemName>
-`
+`<quantity> <itemName>`
 
 e.g.
 
-`
-  10 oranges
-`
+`10 oranges`
 
 This will add the item to your basket and then show you your updated basket.
 
@@ -42,15 +36,11 @@ This will add the item to your basket and then show you your updated basket.
 
 * If you need to check what's in your basket, simply say:
 
-`
-  show basket
-`
+`show basket`
 
 * If you'd like to see the available fruits by a specific category:
 
-`
-  show me <categoryName>
-`
+`show me <categoryName>`
 
 Current options include:
 
@@ -60,12 +50,10 @@ Current options include:
 
 * When you've finished your order and you're ready to send:
 
-`
+```
   confirm order
-
   order done
-  
   finalize order 
-`
+```
 
 @tutti will then show you your order and ask you to confirm if you want to send the order.  Simply reply with 'yes' or 'no'
