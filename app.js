@@ -4,19 +4,22 @@ const nodemailer = require('nodemailer');
 exports.startBot = async function (controller, bot) {
     
     let fruitList;
-    let fruitListNames = [];
-    let totalOrder     = [];
+    let fruitNames    = [];
+    let totalOrder    = [];
+    let categories;
+    let categoryNames = [];
     // let fruit = [];
     // await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
     await (fetch('http://localhost:3000/fruits')
         .then(res => res.text())
         .then(body => {
-        fruitList = JSON.parse(body);
-        for (var key in fruitList) {
-            fruitList[key].fruits.forEach(fruit => fruitListNames.push(fruit.name));
-        };
+        let info = JSON.parse(body);
+        fruitList  = info.fruits;
+        categories = info.categories;
+        categories.forEach(category => categoryNames.push(category.name));
+        fruitList.forEach(fruit => fruitNames.push(fruit.name));
     }));
-    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList));
+    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, categories));
     controller.hears(fruitListNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
     controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(controller, bot, message));
     controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => finishOrder(controller, bot, message, totalOrder));
@@ -24,7 +27,7 @@ exports.startBot = async function (controller, bot) {
     controller.hears(['(.*)'],'direct_message,direct_mention,mention', (bot, message) => errorHandling(controller, bot, message));
 }
 
-function startOrder(controller, bot, message, fruitList) {
+function startOrder(controller, bot, message, fruitList, categories) {
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
@@ -37,7 +40,7 @@ function startOrder(controller, bot, message, fruitList) {
 
     controller.storage.users.get(message.user, function(err, user) {
         startOrderText(bot, message, user)
-            .then(() => { listFruit(bot, message, fruitList)})
+            .then(() => { listFruit(bot, message, fruitList, categories)})
     });
 }    
 
@@ -51,14 +54,19 @@ function startOrderText(bot, message, user) {
     })
 }
 
-function listFruit(bot, message, fruitList) {
+function listFruit(bot, message, fruitList, categories) {
     let fruitMenu = '';
-    for (var key in fruitList) {
-        let category = fruitList[key];
-        fruitMenu += `*${category.name}*:\n`
-        category.fruits.forEach(fruit => fruitMenu += `${fruit.name}: £${fruit.price.toFixed(2)}\n`)
-        fruitMenu += "\n"
-    }
+    categories.forEach(category => {
+        let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === category._id).map(fruit => fruit.name).join("\n")
+        fruitMenu += `*${category.name}:*\n${fruitsInCategory}\n\n`
+    })
+
+    // for (var key in fruitList) {
+    //     let category = fruitList[key];
+    //     fruitMenu += `*${category.name}*:\n`
+    //     category.fruits.forEach(fruit => fruitMenu += `${fruit.name}: £${fruit.price.toFixed(2)}\n`)
+    //     fruitMenu += "\n"
+    // }
     bot.reply(message, fruitMenu);
 }
 
