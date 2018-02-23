@@ -57,16 +57,10 @@ function startOrderText(bot, message, user) {
 function listFruit(bot, message, fruitList, categories) {
     let fruitMenu = '';
     categories.forEach(category => {
-        let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === category._id).map(fruit => fruit.name).join("\n")
+        let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === category._id).map(fruit => `${fruit.name}: £${fruit.price.toFixed(2)}`).join("\n")
         fruitMenu += `*${category.name}:*\n${fruitsInCategory}\n\n`
     })
 
-    // for (var key in fruitList) {
-    //     let category = fruitList[key];
-    //     fruitMenu += `*${category.name}*:\n`
-    //     category.fruits.forEach(fruit => fruitMenu += `${fruit.name}: £${fruit.price.toFixed(2)}\n`)
-    //     fruitMenu += "\n"
-    // }
     bot.reply(message, fruitMenu);
 }
 
