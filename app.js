@@ -75,7 +75,6 @@ function filterCategory(controller, bot, message, categories, fruitList) {
 }
 
 function showBasket(controller, bot, message, totalOrder) {
-    console.log(totalOrder);
     let botResponse;
     if (totalOrder.length) {
         let basketToString = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('');
