@@ -20,7 +20,7 @@ exports.startBot = async function (controller, bot) {
         fruitList.forEach(fruit => fruitNames.push(fruit.name));
     }));
     controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, categories));
-    controller.hears(fruitListNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
+    controller.hears(fruitNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
     controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(controller, bot, message));
     controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => finishOrder(controller, bot, message, totalOrder));
     controller.hears(['(.*) help', 'help'],'direct_message,direct_mention,mention', (bot, message) => helpUser(controller, bot, message));
@@ -60,7 +60,6 @@ function listFruit(bot, message, fruitList, categories) {
         let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === category._id).map(fruit => `${fruit.name}: £${fruit.price.toFixed(2)}`).join("\n")
         fruitMenu += `*${category.name}:*\n${fruitsInCategory}\n\n`
     })
-
     bot.reply(message, fruitMenu);
 }
 
