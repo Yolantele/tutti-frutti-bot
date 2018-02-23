@@ -111,9 +111,8 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
         let existingItem = totalOrder.filter(item => item.name.toLowerCase() === name.toLowerCase())[0]
         if (existingItem) {
             let newQuantity = existingItem.quantity + quantity;
-            if (newQuantity > 0) {
-                existingItem.quantity = newQuantity;
-            } else {
+            existingItem.quantity = newQuantity;
+            if (existingItem.quantity <= 0) {
                 let i = totalOrder.indexOf(existingItem);
                 totalOrder.splice(i, 1);
             }
@@ -127,8 +126,6 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
             }
         }
 
-
-
         if (totalOrder.length > 0) {
             let updatedBasket = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
             bot.reply(message, `Got it! I will add ${message.text} to your basket.\nYour updated basket:\n${updatedBasket}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
@@ -138,6 +135,7 @@ function updateOrder(controller, bot, message, totalOrder, fruitList) {
 
     });
 }
+
 
 function getSum(total, num) {
     return total + num
