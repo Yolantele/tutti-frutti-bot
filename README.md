@@ -16,7 +16,9 @@ You can still use the bot in other channels, however you would have to start by 
 
 `
   start order
+
   fruit order
+
   I want to order fruits
 `
 
@@ -60,7 +62,9 @@ Current options include:
 
 `
   confirm order
+
   order done
+  
   finalize order 
 `
 
