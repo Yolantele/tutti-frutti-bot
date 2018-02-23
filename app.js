@@ -8,6 +8,7 @@ exports.startBot = async function (controller, bot) {
     let totalOrder    = [];
     let categories;
     let categoryNames = [];
+    let categoryCommands;
     await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
     // await (fetch('http://localhost:3000/fruits')
         .then(res => res.text())
@@ -17,8 +18,11 @@ exports.startBot = async function (controller, bot) {
         categories = info.categories;
         categories.forEach(category => categoryNames.push(category.name));
         fruitList.forEach(fruit => fruitNames.push(fruit.name));
+        categoryCommands = categoryNames.map(category => `show me ${category}`)
+        console.log('COMMANDS ===>>>', categoryCommands)
     }));
     controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, categories));
+    controller.hears(categoryCommands, 'direct_message,direct_mention,mention', (bot, message) => filterCategory(controller, bot, message, categories, fruitList))
     controller.hears(fruitNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
     controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', (bot, message) => getName(controller, bot, message));
     controller.hears(['confirm order', 'finalize order', 'order done'], 'direct_message,direct_mention,mention', (bot, message) => finishOrder(controller, bot, message, totalOrder));
@@ -62,6 +66,10 @@ function listFruit(bot, message, fruitList, categories) {
     bot.reply(message, fruitMenu);
 }
 
+function filterCategory(controller, bot, message, categories, fruitList) {
+    let selectedCategory = message.text
+    bot.reply(message, selectedCategory)
+}
 
 function updateOrder(controller, bot, message, totalOrder, fruitList) {
     bot.api.reactions.add({
