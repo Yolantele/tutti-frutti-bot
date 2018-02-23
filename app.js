@@ -67,8 +67,13 @@ function listFruit(bot, message, fruitList, categories) {
 }
 
 function filterCategory(controller, bot, message, categories, fruitList) {
-    let selectedCategory = message.text
-    bot.reply(message, selectedCategory)
+    let selectedCategory = message.text.split('show me ')[1].trim();
+    let category = categories.filter(cat => cat.name.toLowerCase() === selectedCategory.toLowerCase());
+    let categoryId       = categories.filter(category => category.name.toLowerCase() === selectedCategory.toLowerCase())[0]._id;
+    let categoryName     = categories.filter(category => category._id === categoryId)[0].name;
+    let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === categoryId).map(fruit => `${fruit.name}: £${fruit.price.toFixed(2)}`).join("\n");
+    let botResponse      = `*${categoryName}:*\n${fruitsInCategory}`
+    bot.reply(message, botResponse);
 }
 
 function updateOrder(controller, bot, message, totalOrder, fruitList) {
