@@ -157,9 +157,9 @@ function getName(controller, bot, message) {
 }
 
 function finishOrder(controller, bot, message, totalOrder) {
-    bot.startConversation(message, (err, convo) => {
+    if(totalOrder.length > 0) {
+        bot.startConversation(message, (err, convo) => {
         let orderList   = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('')
-
         convo.ask("Are you sure you'd like to order the following?\n\n" + orderList, [
             {
                 pattern: bot.utterances.yes,
@@ -198,8 +198,10 @@ function finishOrder(controller, bot, message, totalOrder) {
                 convo.next();
                 }
             }
-        ])
-    })
+        ])})
+    } else {
+        bot.reply(message, 'Your basket is empty. Please type help to find out how to add items to your basket.')
+    }
 }
 
 function orderAsHTMLBuilder(totalOrder) {
