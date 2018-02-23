@@ -76,8 +76,14 @@ function filterCategory(controller, bot, message, categories, fruitList) {
 
 function showBasket(controller, bot, message, totalOrder) {
     console.log(totalOrder);
-    let basketToString = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('') 
-    bot.reply(message, `Your basket:\n${basketToString}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`)
+    let botResponse;
+    if (totalOrder.length) {
+        let basketToString = totalOrder.map(item => `${item.name}: ${item.quantity} - £${(item.price * item.quantity).toFixed(2)} \n`).join('');
+        botResponse = `Your basket:\n${basketToString}----------------------\n Your total is £${totalOrder.map(e => e.quantity * e.price).reduce(getSum).toFixed(2)}`;
+    } else {
+        botResponse = "Your basket is currently empty";
+    }
+    bot.reply(message, botResponse)
 }
 
 function updateOrder(controller, bot, message, totalOrder, fruitList) {
