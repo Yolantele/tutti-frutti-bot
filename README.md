@@ -1,16 +1,20 @@
 # README
 
-### The What...
+## Tutti Frutti:
 
-Tutti Frutti Bot (or @tutti for short!) is a Bot you can use within Slack to order fruit from fruitfortheoffice.com
 
-### How to Use
+Tutti Frutti Bot (or @tutti for short!) is a Bot you can use within Slack to order fruit from fruitfortheoffice.com. Tutti Frutti also includes a WebScrapper which obtains the list of fruits from the categories of the fruit website.  
+
+
+## How to Use: 
 
 We'd recommend by starting a direct conversation with @tutti.
 
 You can still use the bot in other channels, however you would have to start by saying '@tutti' on each command.
 
-### Commands
+## Tutti Commands:
+
+To Engage to Tutti Frutti, write these commands listed below in Slack. All of these commands can also be listed on Slack itself, if you type '**@Tutti help**' in Slack. 
 
 * To start a new order, use one of the following:
 
@@ -24,7 +28,7 @@ This will list all of the available options and their prices, and allow you to s
 
 * To add an item to your basket:
 
-`<quantity> <itemName>`
+````<quantity> <itemName>`
 
 e.g.
 
@@ -57,3 +61,16 @@ Current options include:
 ```
 
 @tutti will then show you your order and ask you to confirm if you want to send the order.  Simply reply with 'yes' or 'no'
+
+
+## Team: 
+
+- [Antonio Belmar de Costa](https://github.com/antoniobelmar) 🍊
+- [Dania Mah](https://github.com/thatdania) 🍉
+- [Gabriella Budeanu](https://github.com/gabrielabud) 🍇
+- [Jolanta Jas](https://github.com/Yolantele) 🍈
+- [Marie Kerkstoel](https://github.com/mariekerkstoel) 🍒
+- [Tom Moir](https://github.com/tmerrr) 🍎
+
+
+
