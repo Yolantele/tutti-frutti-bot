@@ -1,26 +1,37 @@
+const Order = require('./lib/order')
+const Menu = require('./lib/menu')
+
 const fetch = require('node-fetch');
 const nodemailer = require('nodemailer');
 
 exports.startBot = async function (controller, bot) {
-    
+
     let fruitList;
     let fruitNames    = [];
     let totalOrder    = [];
     let categories;
     let categoryNames = [];
     let categoryCommands;
-    await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
-    // await (fetch('http://localhost:3000/fruits')
-        .then(res => res.text())
-        .then(body => {
-        let info = JSON.parse(body);
-        fruitList  = info.fruits;
-        categories = info.categories;
-        categories.forEach(category => categoryNames.push(category.name));
-        fruitList.forEach(fruit => fruitNames.push(fruit.name));
-        categoryCommands = categoryNames.map(category => `show me ${category}`)
-    }));
-    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', (bot, message) => startOrder(controller, bot, message, fruitList, categories));
+    
+    controller.hears(['I want to order fruits', 'fruit order', 'start order'],'direct_message,direct_mention,mention', async (bot, message) => {
+        await (fetch('https://jigsaw-tutti.herokuapp.com/fruits')
+        .then(resPromise => resPromise.text())
+        .then(res => {
+            const body = JSON.parse(res);
+            fruitList  = body.fruits;
+            categories = body.categories;
+            categories.forEach(category => categoryNames.push(category.name));
+            fruitList.forEach(fruit => fruitNames.push(fruit.name));
+            categoryCommands = categoryNames.map(category => `show me ${category}`)
+        }))
+        .then(() => {
+            const menu = new Menu(fruitList, categories)
+            const order = new Order(controller, bot, message, menu)
+            return order.start();
+        });
+    });
+    
+    
     controller.hears(['show basket'], 'direct_message,direct_mention,mention', (bot, message) => showBasket(controller, bot, message, totalOrder));
     controller.hears(categoryCommands, 'direct_message,direct_mention,mention', (bot, message) => filterCategory(controller, bot, message, categories, fruitList))
     controller.hears(fruitNames, 'direct_message,direct_mention,mention', (bot, message)  => updateOrder(controller, bot, message, totalOrder, fruitList));
@@ -30,41 +41,41 @@ exports.startBot = async function (controller, bot) {
     controller.hears(['(.*)'],'direct_message,direct_mention,mention', (bot, message) => errorHandling(controller, bot, message));
 }
 
-function startOrder(controller, bot, message, fruitList, categories) {
-    bot.api.reactions.add({
-        timestamp: message.ts,
-        channel: message.channel,
-        name: 'green_apple',
-    }, function(err, res) {
-        if (err) {
-            bot.botkit.log('Failed to add emoji reaction :(', err);
-        }
-    });
+// function startOrder(controller, bot, message, fruitList, categories) {
+//     bot.api.reactions.add({
+//         timestamp: message.ts,
+//         channel: message.channel,
+//         name: 'green_apple',
+//     }, function(err, res) {
+//         if (err) {
+//             bot.botkit.log('Failed to add emoji reaction :(', err);
+//         }
+//     });
 
-    controller.storage.users.get(message.user, function(err, user) {
-        startOrderText(bot, message, user)
-            .then(() => { listFruit(bot, message, fruitList, categories)})
-    });
-}    
+//     controller.storage.users.get(message.user, function(err, user) {
+//         startOrderText(bot, message, user)
+//             .then(() => { listFruit(bot, message, fruitList, categories)})
+//     });
+// }    
 
-function startOrderText(bot, message, user) {
-    return new Promise(function(resolve) {
-        if (user && user.name) {
-            bot.reply(message, 'Ok ' + user.name + ' let us start your order!!', resolve);
-        } else {
-            bot.reply(message, 'Let us start your fruit order.', resolve);
-        } 
-    })
-}
+// function startOrderText(bot, message, user) {
+//     return new Promise((resolve) => {
+//         if (user && user.name) {
+//             bot.reply(message, 'Ok ' + user.name + ' let us start your order!!', resolve);
+//         } else {
+//             bot.reply(message, 'Let us start your fruit order.', resolve);
+//         } 
+//     })
+// }
 
-function listFruit(bot, message, fruitList, categories) {
-    let fruitMenu = '';
-    categories.forEach(category => {
-        let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === category._id).map(fruit => `${fruit.name}: £${fruit.price.toFixed(2)}`).join("\n")
-        fruitMenu += `*${category.name}:*\n${fruitsInCategory}\n\n`
-    })
-    bot.reply(message, fruitMenu);
-}
+// function listFruit(bot, message, fruitList, categories) {
+//     let fruitMenu = '';
+//     categories.forEach(category => {
+//         let fruitsInCategory = fruitList.filter(fruit => fruit.categoryId === category._id).map(fruit => `${fruit.name}: £${fruit.price.toFixed(2)}`).join("\n")
+//         fruitMenu += `*${category.name}:*\n${fruitsInCategory}\n\n`
+//     })
+//     bot.reply(message, fruitMenu);
+// }
 
 function filterCategory(controller, bot, message, categories, fruitList) {
     let selectedCategory = message.text.split('show me ')[1].trim();
